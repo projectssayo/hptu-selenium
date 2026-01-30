@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from playwright.async_api import async_playwright
 import sys
-import os
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
@@ -114,40 +113,14 @@ async def stream_results(rolls):
 
         await browser.close()
 
-@app.get("/")
-async def root():
-    return {"message": "Server is running"}
-
-@app.get("/health")
-async def health():
-    return {"status": "ok"}
-
-@app.get("/info")
-async def info():
-    example_rolls = [240603010065, 240603010066, 240603010067, 240603010068, 240603010069, 
-                    240603010070, 240603010071, 240603010072, 240603010073, 240603010074,
-                    240603010075, 240603010076, 240603010077, 240603010078, 240603010079,
-                    240603010080, 240603010081, 240603010082, 240603010083, 240603010084,
-                    240603010085, 240603010086, 240603010087, 240603010088, 240603010089,
-                    240603010090, 240603010091, 240603010092, 240603010093, 240603010094,
-                    240603010095, 240603010096, 240603010097, 240603010098, 240603010099,
-                    240603010100]
-    
-    # For local development, you can use localhost
-    base_url = "http://127.0.0.1:8000"
-    
-    # For production, you can get the actual URL if needed
-    # But for the example, we'll use localhost as requested
-    example_url = f"{base_url}/results/stream?rolls={json.dumps(example_rolls)}"
-    
-    return {
-        "info": example_url,
-        "usage": "Send a GET request to /results/stream with a 'rolls' parameter containing a JSON array of roll numbers",
-        "example_rolls": example_rolls,
-        "note": "The response is a Server-Sent Events (SSE) stream. Use EventSource in JavaScript or appropriate SSE client to receive data."
-    }
 
 @app.get("/results/stream")
 async def stream_api(rolls: str):
     rolls = json.loads(rolls)
     return StreamingResponse(stream_results(rolls), media_type="text/event-stream")
+
+
+
+@app.get("/info")
+def info():
+    return {"info":"http://localhost:8000/results/stream?rolls=[240603010065,240603010066]"}
